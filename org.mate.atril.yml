@@ -64,6 +64,16 @@ modules:
       - type: "archive"
         url: "https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.bz2"
         sha256: "af57be25cb4c4f4b413ed692fe378affb4352ea50fbe294a11ef548f4d527d89"
+  # "popplerdata" based on https://github.com/flathub/org.gnome.Evince/blob/master/org.gnome.Evince.json
+  - name: "popplerdata"
+    no-autogen: true
+    make-install-args:
+      - prefix=/app
+    sources:
+      - type: git
+        url: https://gitlab.freedesktop.org/poppler/poppler-data.git
+        tag: POPPLER_DATA_0_4_12
+        commit: af9f452b427d5ce8abe81ff98cc40c5f39fad90b
   # "poppler" based on https://github.com/flathub/org.cubocore.CorePDF/blob/master/org.cubocore.CorePDF.yml
   - name: poppler
     buildsystem: cmake-ninja
@@ -77,7 +87,7 @@ modules:
         url: https://gitlab.freedesktop.org/poppler/poppler.git
         tag: poppler-25.01.0
         commit: 3ead1238555ce14dd0c619f1097d552307e6e40a
-  # "djvulibre" base on https://github.com/flathub/org.gnome.Evince/blob/master/org.gnome.Evince.json
+  # "djvulibre" based on https://github.com/flathub/org.gnome.Evince/blob/master/org.gnome.Evince.json
   - name: "djvulibre"
     config-opts:
       - --disable-desktopfiles
