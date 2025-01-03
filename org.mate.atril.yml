@@ -1,0 +1,95 @@
+app-id: org.mate.atril 
+runtime: org.gnome.Platform
+runtime-version: "47"
+sdk: org.gnome.Sdk
+
+command: atril
+finish-args:
+  - --device=dri
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --filesystem=home:ro
+  - --filesystem=/media:ro
+  - --filesystem=/run/media:ro
+modules:
+  - name: mate-common
+    sources:
+      - type: git
+        url: https://github.com/mate-desktop/mate-common.git
+        tag: v1.28.0
+        commit: 932f37e39de227c365607dbbd21169e92c043237
+    buildsystem: simple
+    build-commands:
+      - ./autogen.sh --prefix=${FLATPAK_DEST}
+      - make
+      - make install V=1
+  # "dconf" based on https://github.com/flathub/ca.desrt.dconf-editor/blob/master/ca.desrt.dconf-editor.json
+  - name: "dconf"
+    buildsystem: "meson"
+    config-opts:
+      - -Dsystemduserunitdir=${FLATPAK_DEST}/lib/systemd/user/
+      - -Dbash_completion=false
+      - -Dman=false
+    cleanup:
+      - /include
+      - /lib/pkgconfig
+      - /libexec
+      - /share/dbus-1
+    sources:
+      - type: "archive"
+        url: "https://download.gnome.org/sources/dconf/0.40/dconf-0.40.0.tar.xz"
+        sha256: "cf7f22a4c9200421d8d3325c5c1b8b93a36843650c9f95d6451e20f0bcb24533"
+        x-checker-data:
+          - type: "gnome"
+            name: "dconf"
+  - name: mate-desktop
+    sources:
+      - type: git
+        url: https://github.com/mate-desktop/mate-desktop.git
+        tag: v1.28.2
+        commit: fee79b7559965d8ae3b4b8e213717b525c703c1b
+    buildsystem: simple
+    build-commands:
+      - ACLOCAL_FLAGS="-I ${FLATPAK_DEST}/share/aclocal" ./autogen.sh --prefix=${FLATPAK_DEST}
+      - make
+      - make install V=1
+  # "boost" based on https://github.com/KDE/flatpak-kde-applications/blob/master/boost.json
+  - name: "boost"
+    buildsystem: "simple"
+    build-commands:
+      - ./bootstrap.sh --prefix=${FLATPAK_DEST} --with-libraries=system
+      - ./b2 -j $FLATPAK_BUILDER_N_JOBS install
+    sources:
+      - type: "archive"
+        url: "https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.bz2"
+        sha256: "af57be25cb4c4f4b413ed692fe378affb4352ea50fbe294a11ef548f4d527d89"
+  # "poppler" based on https://github.com/flathub/org.cubocore.CorePDF/blob/master/org.cubocore.CorePDF.yml
+  - name: poppler
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DENABLE_BOOST=ON
+      - -DENABLE_QT5=OFF
+      - -DENABLE_QT6=OFF
+      - -DRUN_GPERF_IF_PRESENT=OFF
+    sources:
+      - type: git
+        url: https://gitlab.freedesktop.org/poppler/poppler.git
+        tag: poppler-25.01.0
+        commit: 3ead1238555ce14dd0c619f1097d552307e6e40a
+  - name: atril
+    sources:
+      - type: git
+        url: https://github.com/mate-desktop/atril.git
+        tag: v1.28.1
+        commit: db229c01a3ed39622cf5f5e94cccc42e3eb50c87
+    buildsystem: simple
+    build-commands:
+      - ACLOCAL_FLAGS="-I ${FLATPAK_DEST}/share/aclocal" ./autogen.sh --disable-caja --disable-synctex --prefix=${FLATPAK_DEST}
+      - make
+      - make install V=1
+    post-install:
+      - install -Dm644 data/icons/scalable/apps/atril.svg ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps/${FLATPAK_ID}.svg
+      - sed -e "s|Icon=atril|Icon=${FLATPAK_ID}|g" ${FLATPAK_DEST}/share/applications/atril.desktop > ${FLATPAK_ID}.desktop
+      - install -Dm644 ${FLATPAK_ID}.desktop -t ${FLATPAK_DEST}/share/applications
+      - sed -e "s|<id>atril.desktop</id>|<id>${FLATPAK_ID}</id>|g" ${FLATPAK_DEST}/share/metainfo/atril.appdata.xml > ${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml
