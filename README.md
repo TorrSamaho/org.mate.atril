@@ -1,6 +1,6 @@
 # Install prerequisites
 ```
-flatpak install --user flathub org.gnome.Platform//47 org.gnome.Sdk//47 flathub org.flatpak.Builder
+flatpak install --user flathub org.gnome.Platform//48 org.gnome.Sdk//48 flathub org.flatpak.Builder
 ```
 
 # Build and install (using the flatpak version of flatpak-builder)
